@@ -7,33 +7,43 @@
             </div>
             <form class="form-horizontal">
                 <div class="alert alert-success valor" role="alert" style="width: 80%; margin-left:10%;">Datos Personales  
-                <div class="form-group row">
-                    <label class="col-md-2 control-label">Nombre</label>
-                    <div class="col-md-2"> 
-                        <input type="text" class="form-control" id="nombre" name="nombre" placeholder="Nombre" autofocus></div>
+                    <div class="form-group row">
+                        <label class="col-md-2 control-label">Nombre</label>
+                        <div class="col-md-2"> 
+                            <input type="text" class="form-control" id="nombre" name="nombre" placeholder="Nombre" autofocus></div>
 
-                    <label class="col-md-2 control-label">Apellido</label>
-                    <div class="col-md-2"> 
-                        <input type="text" class="form-control" id="apellido" name="apellido" placeholder="Apellido"></div>
+                        <label class="col-md-2 control-label">Apellido</label>
+                        <div class="col-md-2"> 
+                            <input type="text" class="form-control" id="apellido" name="apellido" placeholder="Apellido"></div>
+                    </div>
                 </div>
-              </div>
                 <div class="alert alert-success valor" role="alert" style="width: 80%; margin-left:10%;">Datos de Usuario  
-                <div class="form-group row">
-                    <label class="col-md-2 control-label">Usuario</label>
-                    <div class="col-md-2"> 
-                        <input type="text" class="form-control" id="usuario" name="usuario" placeholder="Usuario"></div>
+                    <div class="form-group row">
+                        <label class="col-md-2 control-label">Usuario</label>
+                        <div class="col-md-2"> 
+                            <input type="text" class="form-control" id="usuario" name="usuario" placeholder="Usuario"></div>
 
-                    <label class="col-md-2 control-label">Contraseña</label>
-                    <div class="col-md-2"> 
-                        <input type="password" class="form-control" id="contrasenia" name="contrasenia" placeholder="Contraseña"></div>
+                        <label class="col-md-2 control-label">Contraseña</label>
+                        <div class="col-md-2"> 
+                            <input type="password" class="form-control" id="contrasenia" name="contrasenia" placeholder="Contraseña"></div>
+                    </div>
                 </div>
-              </div>
+
+                <div class="alert alert-success valor" role="alert" style="width: 80%; margin-left:10%;">Tipo y Permisos de Usuarios 
+                    <div class="form-group row">                     
+                        <label class="col-md-2 control-label">Tipo Usuario</label>
+                        <div class="col-md-4">
+                            <select class="form-control tipo_usuario" id="tipo_usuario" name="tipo_usuario" value=<?= form_dropdown('idtipo_usuario', $idtipo_usuario); ?></select> </div><br>
+                        <a href="#" type="hidden" class="btn btn-success" id="permiso">Permisos</a>
+                    </div>
+                </div>
+
                 <button type="submit" class="btn btn-success fa fa-save fa-lg col-lg-offset-4"> Crear</button>
                 <a href="index/1" class="btn btn-success fa fa-close fa-lg col-lg-offset-1" id="botones">Cancelar</a>
 
             </form>
-                <?= form_close(); ?>
-                <?= validation_errors(); ?>
+            <?= form_close(); ?>
+            <?= validation_errors(); ?>
 
         </div>
     </div>

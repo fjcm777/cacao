@@ -26,20 +26,22 @@ class Usuario extends CI_Controller {
                 $usuario = $this->input->post('user');
                 $contrasenia = $this->input->post('pass');
 
+                $tipo_usuario = $this->Login_model->tipo_usuario($usuario, $usuario);
+
                 $ingreso = $this->Login_model->entrar($usuario, $contrasenia);
 
                 switch ($ingreso):
                     case 0:
                         $this->load->view('administracion/usuario/login_view');
                         break;
-
                     case 1:
                         $data = array(
                             'user' => $usuario,
+                            'tipo_usuario' => $tipo_usuario[0]['tipo_usuario'],
                             'loged_in' => true
                         );
                         $this->session->set_userdata($data);
-                        redirect('contabilidad/contabilidad');
+                       header('Location:' . base_url() . 'index.php/contabilidad/contabilidad');
                         break;
                 endswitch;
             }

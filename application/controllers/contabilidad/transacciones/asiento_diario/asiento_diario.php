@@ -13,7 +13,31 @@ class Asiento_diario extends CI_Controller {
 
     public function index() {
         $data['titulo'] = 'Crear Asiento de Diario';
-        $this->load->view('modules/menu/menu_contabilidad', $data);
+         switch ($this->session->userdata('tipo_usuario')):
+
+            case 'Administrador':
+                $this->load->view('modules/menu/menu_contabilidad', $data);
+
+                break;
+
+            case 'Usuario':
+                $this->load->model('administracion/usuario/Login_Model');
+
+                $usuario = $this->session->userdata('user');
+                $menu_inicio = $this->Login_Model->recuperar_menus_principales_contabilidad($usuario);
+                $submenu_transacciones = $this->Login_Model->recuperar_submenu_transacciones($usuario);
+                $submenu_catalogos = $this->Login_Model->recuperar_submenu_catalogos($usuario);
+                $submenu_operaciones = $this->Login_Model->recuperar_submenu_operaciones($usuario);
+                $submenu_gestion = $this->Login_Model->recuperar_submenu_gestion($usuario);
+
+                $menu_armado = $this->menu->menu_usuario($menu_inicio, $submenu_transacciones, $submenu_catalogos, $submenu_operaciones, $submenu_gestion);
+
+                $data['menu'] = $menu_armado;
+                $this->load->view('modules/menu/menu_contabilidad_usuario', $data);
+
+                break;
+        endswitch;
+        
         $vista = $this->Asiento_diario_model->asiento_diario_listar();
         $data['asiento_diario'] = $vista;
 
@@ -402,7 +426,7 @@ class Asiento_diario extends CI_Controller {
         $this->Tasa_cambio_model->tasa_cambio_agregar($idmoneda, $fecha_tipo_cambio, $tasa_cambio);
     }
     
-    public function asiento_diario_mayorizar($idasiento_diario) {
+     public function asiento_diario_mayorizar($idasiento_diario) {
         $this->load->model('contabilidad/transacciones/asiento_mayor/Asiento_mayor_model');
         $this->load->model('contabilidad/catalogo/cuentas/Catalogo_cuentas_model');
         
@@ -410,31 +434,30 @@ class Asiento_diario extends CI_Controller {
         $this->Asiento_mayor_model->mayorizar_asiento_diario_detalle($idasiento_diario);
         
         $lista_cuentas_mayor_detalle = $this->Asiento_mayor_model->leer_cuentas_mayor_detalle($idasiento_diario);
-        print_r($lista_cuentas_mayor_detalle);
-//        $fecha_asiento_mayor = $this->Asiento_mayor_model->encontrar_fecha_asiento_mayor($idasiento_diario);
-//        $anio_fiscal = $this->Asiento_mayor_model->encontrar_anio_fiscal_asiento_mayor($fecha_asiento_mayor);
-//        $lista_cuentas_saldos = $this->Asiento_mayor_model->buscar_cuenta_contable_saldos($anio_fiscal);
-//        
-//        foreach ($lista_cuentas_mayor_detalle as $cuenta_mayor_detalle) {
-//            if(!in_array($cuenta_mayor_detalle,$lista_cuentas_saldos)) {
-//                $cuenta_mayor_det = $cuenta_mayor_detalle['idcuenta_contable'];
-//                $this->Asiento_mayor_model->agregar_cuenta_contable($cuenta_mayor_det, $anio_fiscal);
-//            }
-//        }
-//                
-//        $periodo_cuenta = $this->Asiento_mayor_model->encontrar_periodo_fiscal_asiento_mayor($fecha_asiento_mayor,$anio_fiscal);
-//        $lista_montos = $this->Asiento_mayor_model->sumar_montos_asiento_mayor_detalle($idasiento_diario);
-//        
-//        foreach ($lista_montos as $montos) {
-//            if($montos['idcuenta_contable']!=null) {
-//                $monto = $montos['monto_local'];
-//                $idcuent = $montos['idcuenta_contable'];
-//                $this->Asiento_mayor_model->mayorizar_saldos($periodo_cuenta,$monto,$idcuent,$anio_fiscal);
-//            }
-//        }
-//        
-//        $this->Asiento_mayor_model->eliminar_asiento_diario($idasiento_diario);
-//        
-//        header('Location:' . base_url() . 'index.php/contabilidad/transacciones/asiento_diario/asiento_diario/index');
+        $fecha_asiento_mayor = $this->Asiento_mayor_model->encontrar_fecha_asiento_mayor($idasiento_diario);
+        $anio_fiscal = $this->Asiento_mayor_model->encontrar_anio_fiscal_asiento_mayor($fecha_asiento_mayor);
+        $lista_cuentas_saldos = $this->Asiento_mayor_model->buscar_cuenta_contable_saldos($anio_fiscal);
+        
+        foreach ($lista_cuentas_mayor_detalle as $cuenta_mayor_detalle) {
+            if(!in_array($cuenta_mayor_detalle,$lista_cuentas_saldos)) {
+                $cuenta_mayor_det = $cuenta_mayor_detalle['idcuenta_contable'];
+                $this->Asiento_mayor_model->agregar_cuenta_contable($cuenta_mayor_det, $anio_fiscal);
+            }
+        }
+                
+        $periodo_cuenta = $this->Asiento_mayor_model->encontrar_periodo_fiscal_asiento_mayor($fecha_asiento_mayor,$anio_fiscal);
+        $lista_montos = $this->Asiento_mayor_model->sumar_montos_asiento_mayor_detalle($idasiento_diario);
+        
+        foreach ($lista_montos as $montos) {
+            if($montos['idcuenta_contable']!=null) {
+                $monto = $montos['monto_local'];
+                $idcuent = $montos['idcuenta_contable'];
+                $this->Asiento_mayor_model->mayorizar_saldos($periodo_cuenta,$monto,$idcuent,$anio_fiscal);
+            }
+        }
+        
+        $this->Asiento_mayor_model->eliminar_asiento_diario($idasiento_diario);
+        
+        header('Location:' . base_url() . 'index.php/contabilidad/transacciones/asiento_diario/asiento_diario/index');
     }
 }

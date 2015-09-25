@@ -23,6 +23,7 @@
                     </div>
                     <button class="btn btn-lg btn-success btn-block" type="submit">Aceptar</button>
                 </form>
+     
                 <?= form_close(); ?>
                 <?= validation_errors(); ?>
             </div>

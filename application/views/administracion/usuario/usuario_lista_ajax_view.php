@@ -8,6 +8,7 @@ if (!empty($consulta_usuario)) {
                                 <th>Nombre</th>
                                 <th>Apellido</th>
                                 <th>Usuario</th>
+                                <th>Tipo Usuario</th>
                                 <th>Editar</th>
                                 <th>Cambiar Clave</th>
                                 <th>Desactivar</th>
@@ -22,6 +23,7 @@ if (!empty($consulta_usuario)) {
                         <td>" . $cate['nombre'] . "</td>
                         <td>" . $cate['apellido'] . "</td>
                         <td>" . $cate['usuario'] . "</td>
+                        <td>" . $cate['tipo_usuario'] . "</td>
                         <td>" . '<a href="' . base_url() . 'index.php/administracion/usuario/usuario_procesar/usuario_editar/' . $id . '" class="fa fa-pencil fa-fw">Editar</a>' . "</td>
                              <td>" . '<a href="' . base_url() . 'index.php/administracion/usuario/usuario_procesar/usuario_editar_pass/' . $id . '" class="fa fa-pencil fa-fw">Cambiar Clave</a>' . "</td>
                         <td>" . '<a class="fa fa-ban fa-fw inactivar inactivar" value="' . $id . '">Inactivar</a>' .
@@ -47,6 +49,7 @@ elseif (!empty($consulta_usuario_inactivos)) {
                                 <th>Nombre</th>
                                 <th>Apellido</th>
                                 <th>Usuario</th>
+                                <th>Tipo Usuario</th>
                                 <th>Activar</th>
                                 <th>Eliminar</th>
                             </tr> ";
@@ -60,6 +63,7 @@ elseif (!empty($consulta_usuario_inactivos)) {
                         <td>" . $cate['nombre'] . "</td>
                         <td>" . $cate['apellido'] . "</td>
                         <td>" . $cate['usuario'] . "</td>
+                        <td>" . $cate['tipo_usuario'] ."</td>
                         <td>" . "<a href='" . base_url() . "index.php/administracion/usuario/usuario_procesar/usuario_cambiar_estado/" . $id . "/1' class='fa fa-retweet fa-fw'>Activar</a></td>
                         <td>" . "<a href='" . base_url() . "index.php/administracion/usuario/usuario_procesar/usuario_eliminar/" . $id . "' class='fa fa-trash fa-fw'>Eliminar</a></td>" .
         "</tr>";

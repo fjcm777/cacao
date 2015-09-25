@@ -22,11 +22,35 @@ class Estado_situacion extends CI_Controller {
     public function index() {
         $data['titulo'] = 'Rep. E.S.';
 
+        switch ($this->session->userdata('tipo_usuario')):
+
+            case 'Administrador':
+                $this->load->view('modules/menu/menu_contabilidad', $data);
+
+                break;
+
+            case 'Usuario':
+                $this->load->model('administracion/usuario/Login_Model');
+
+                $usuario = $this->session->userdata('user');
+                $menu_inicio = $this->Login_Model->recuperar_menus_principales_contabilidad($usuario);
+                $submenu_transacciones = $this->Login_Model->recuperar_submenu_transacciones($usuario);
+                $submenu_catalogos = $this->Login_Model->recuperar_submenu_catalogos($usuario);
+                $submenu_operaciones = $this->Login_Model->recuperar_submenu_operaciones($usuario);
+                $submenu_gestion = $this->Login_Model->recuperar_submenu_gestion($usuario);
+
+                $menu_armado = $this->menu->menu_usuario($menu_inicio, $submenu_transacciones, $submenu_catalogos, $submenu_operaciones, $submenu_gestion);
+
+                $data['menu'] = $menu_armado;
+                $this->load->view('modules/menu/menu_contabilidad_usuario', $data);
+
+                break;
+        endswitch;
+
         $this->load->model('administracion/Tipo_moneda_model');
         $lista_idmoneda = $this->Tipo_moneda_model->lista_moneda();
         $data['idmoneda'] = $lista_idmoneda;
 
-        $this->load->view('modules/menu/menu_contabilidad', $data);
         $this->load->view('contabilidad/reportes/estado_situacion_rep_view', $data);
 
         foreach ($lista_idmoneda as $idmoneda) {
@@ -318,7 +342,7 @@ class Estado_situacion extends CI_Controller {
 
         $pdf->writeHTML($html4, $ln = true, $fill = false, $reseth = false, $cell = false, $align = 'center');
 
-        $nombre_archivo = utf8_decode("E_S_INDEF_".date("d_m_Y").".pdf");
+        $nombre_archivo = utf8_decode("E_S_INDEF_" . date("d_m_Y") . ".pdf");
         $pdf->Output($nombre_archivo, "D");
     }
 
@@ -410,7 +434,7 @@ class Estado_situacion extends CI_Controller {
                     $saldo_grupo_total_final_format = number_format($saldo_grupo_total_final, 2, '.', ',');
                     $html2 .= '<tr><td colspan ="3"></td><td class="balance-categoria">' . $simbolo . '</td><td  class="balance-categoria">' . $saldo_grupo_total_final_format . '</td></tr>';
                     $html2 .= '<tr><td colspan ="5" style=" text-align:left; height:10px" ></td></tr>';
-                    
+
                     $saldo_grupo_total_activos += $saldo_grupo_total_final;
                 }
                 $saldo_grupo_total_activos_format = number_format($saldo_grupo_total_activos, 2, '.', ',');
@@ -483,8 +507,8 @@ class Estado_situacion extends CI_Controller {
 
                     $saldo_grupo_total_final_format = number_format($saldo_grupo_total_final, 2, '.', ',');
                     $html3 .= '<tr><td colspan ="3">Total ' . $c_l["categoria_cuenta"] . '</td><td class="balance-categoria">' . $simbolo . '</td><td  class="balance-categoria">' . $saldo_grupo_total_final_format . '</td></tr>';
-                    $html3 .= '<tr><td colspan ="5" style=" text-align:left; height:10px" ></td></tr>'; 
-                    
+                    $html3 .= '<tr><td colspan ="5" style=" text-align:left; height:10px" ></td></tr>';
+
                     $saldo_grupo_total_cat += $saldo_grupo_total_final;
                 }
                 $saldo_grupo_total_cat_format = number_format($saldo_grupo_total_cat, 2, '.', ',');
@@ -515,8 +539,8 @@ class Estado_situacion extends CI_Controller {
         $html4 .= '<table id="comparacion">';
 
         $suma_p_c = number_format(t_pasivo + t_capital, 2, '.', ',');
-        
-        $html4 .= '<tr><td colspan ="7" style=" text-align:left; height:10px" ></td></tr>'; 
+
+        $html4 .= '<tr><td colspan ="7" style=" text-align:left; height:10px" ></td></tr>';
         $html4 .= '<tr>'
                 . '<td colspan ="2" style=" text-align:left;"  class="balance-activo">Total Activos</td><td  class="balance_final">' . $simbolo . '</td><td  class="balance_final">' . t_activo . '</td>'
                 . '<td colspan ="1" class="balance-activo" style=" width:20px;"></td>'
@@ -561,7 +585,7 @@ class Estado_situacion extends CI_Controller {
         $styleG1 = array(
             'alignment' => array('horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_LEFT,),
             'borders' => array(
-                    'bottom' => array('style' => PHPExcel_Style_Border::BORDER_THIN,
+                'bottom' => array('style' => PHPExcel_Style_Border::BORDER_THIN,
                     'color' => array('argb' => '00000000'))
             ),
             'fill' => array('type' => PHPExcel_Style_Fill::FILL_SOLID,
@@ -573,7 +597,6 @@ class Estado_situacion extends CI_Controller {
             'alignment' => array('horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_RIGHT,),
             'borders' => array('bottom' => array('style' => PHPExcel_Style_Border::BORDER_THIN,
                     'color' => array('argb' => '00000000'),),
-               
             ),
             'fill' => array('type' => PHPExcel_Style_Fill::FILL_SOLID,
                 'argb' => '6DDF7C'
@@ -581,13 +604,13 @@ class Estado_situacion extends CI_Controller {
         );
 
         $styleT = array(
-            'font' => array('bold' => true,'size'=>20),
+            'font' => array('bold' => true, 'size' => 20),
             'alignment' => array('horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,),
             'fill' => array('type' => PHPExcel_Style_Fill::FILL_SOLID,
                 'argb' => 'F2F2F2'
             )
         );
-        
+
 //         $styleT = array(
 //            'font' => array('bold' => true,),
 //            'alignment' => array('horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER_CONTINUOUS,),
@@ -595,39 +618,36 @@ class Estado_situacion extends CI_Controller {
 //                'argb' => '4CEE2C'
 //            ),
 //        );
-        
+
         $sheet = $this->excel->getActiveSheet();
-        
+
         $objD = new PHPExcel_Worksheet_Drawing();
         $objD->setName('Logo');
         $objD->setDescription('');
-        $objD->setPath(__DIR__.'\bannerjasperland.png'); 
+        $objD->setPath(__DIR__ . '\bannerjasperland.png');
         $objD->setHeight(100);
-        
-         for($i=1;$i<10;$i++){
-            $sheet->mergeCells('A'.$i.':E'.$i);
-            
+
+        for ($i = 1; $i < 10; $i++) {
+            $sheet->mergeCells('A' . $i . ':E' . $i);
         }
-        
+
         $objD->setCoordinates('A1');
-        
+
         $objD->setWorksheet($sheet);
-        
-        $sheet->setCellValueByColumnAndRow( 0, 6, "Reporte de Estado Situacion");
+
+        $sheet->setCellValueByColumnAndRow(0, 6, "Reporte de Estado Situacion");
         $sheet->getStyle("A6:E6")->applyFromArray($styleT);
-        
+
         setlocale(LC_TIME, 'spanish');
         $fecha = utf8_encode(strftime("%A, %d de %B de %Y "));
-        $sheet->setCellValueByColumnAndRow( 0, 9, $fecha);
+        $sheet->setCellValueByColumnAndRow(0, 9, $fecha);
 //        $sheet->getStyle("A9:E9")->applyFromArray($styleG1);
 
         if ($moneda != 1) {
             $tasa_encontrada = $this->Tasa_cambio_model->tasa_cambio_encontrar_por_fecha(date("Y-m-d"), $moneda);
             $cambio = $tasa_encontrada[0]['tasa_cambio'];
-            
         } else if ($moneda == 1) {
             $cambio = $moneda;
-            
         }
 
         $eb_col = 0;
@@ -643,7 +663,7 @@ class Estado_situacion extends CI_Controller {
                 $eb_fil++;
 
                 $c_l_encontrada = $this->Categorias_cuentas_model->encontrar_por_campo_reporte($b_l['idestructura_base'], 1);
-                
+
                 $categorias = "";
                 $saldo_grupo_total_cat = 0;
                 foreach ($c_l_encontrada as $c_l) {
@@ -656,7 +676,7 @@ class Estado_situacion extends CI_Controller {
 //
                     //////////////niveles de grupos///////////////////
                     $saldo_grupo_total_final = 0;
-                    $num_grupos_impresos=0;
+                    $num_grupos_impresos = 0;
                     foreach ($grupos_n1 as $n1) {
 
                         $grupos = $this->Estado_situacion_model->niveles_grupo(1, $n1['idgrupo_cuenta']);
@@ -695,11 +715,11 @@ class Estado_situacion extends CI_Controller {
                         }
                         $sheet->setCellValueByColumnAndRow($eb_col, $eb_fil, $n1['grupo_cuenta']);
                         $sheet->getStyle('A' . $eb_fil)->applyFromArray($styleG1);
-                        
+
                         $sheet->setCellValueByColumnAndRow($eb_col + 1, $eb_fil, $saldo_grupo_total);
                         $sheet->getStyle('B' . $eb_fil)->getNumberFormat()->setFormatCode('#,##0.00');
                         $sheet->getStyle('B' . $eb_fil)->applyFromArray($styleB);
-                        
+
                         $eb_fil++;
                         $num_grupos_impresos++;
                         $saldo_grupo_total_final += $saldo_grupo_total;
@@ -710,26 +730,25 @@ class Estado_situacion extends CI_Controller {
                     $sheet->getStyle('A' . $eb_fil . ':B' . $eb_fil)->applyFromArray($styleG1);
                     $sheet->mergeCells('A' . $eb_fil . ':B' . $eb_fil);
                     $eb_fil++;
-                    
-                    $sheet->setCellValue('B'.$eb_fil, '=SUM(B'.($eb_fil-($num_grupos_impresos+1)).':B'.($eb_fil-2).')');
-                    $sheet->getStyle('B'.$eb_fil)->getNumberFormat()->setFormatCode('#,##0.00');
-                    
-                    $categorias.="B".$eb_fil."+";
-                    
+
+                    $sheet->setCellValue('B' . $eb_fil, '=SUM(B' . ($eb_fil - ($num_grupos_impresos + 1)) . ':B' . ($eb_fil - 2) . ')');
+                    $sheet->getStyle('B' . $eb_fil)->getNumberFormat()->setFormatCode('#,##0.00');
+
+                    $categorias.="B" . $eb_fil . "+";
+
                     $sheet->setCellValueByColumnAndRow($eb_col, $eb_fil, "Total " . $c_l["categoria_cuenta"]);
                     $sheet->getStyle('A' . $eb_fil)->applyFromArray($styleG1);
 //                    $sheet->setCellValueByColumnAndRow($eb_col + 1, $eb_fil, $saldo_grupo_total_final_format);
                     $sheet->getStyle('B' . $eb_fil)->applyFromArray($styleB);
                     $eb_fil++;
                     $saldo_grupo_total_cat += $saldo_grupo_total_final;
-                    
                 }
                 $saldo_grupo_total_activos_format = number_format($saldo_grupo_total_cat, 2, '.', ',');
                 define("t_activo", $saldo_grupo_total_activos_format);
                 $sheet->setCellValueByColumnAndRow($eb_col, $eb_fil, "Total Activos");
                 $sheet->getStyle('A' . $eb_fil)->applyFromArray($styleG1);
-                
-                $sheet->setCellValue('B'.$eb_fil, '='.substr($categorias,0,strlen($categorias)-1));
+
+                $sheet->setCellValue('B' . $eb_fil, '=' . substr($categorias, 0, strlen($categorias) - 1));
                 $sheet->getStyle('B' . $eb_fil)->getNumberFormat()->setFormatCode('#,##0.00');
                 $sheet->getStyle('B' . $eb_fil)->applyFromArray($styleB);
             }
@@ -740,7 +759,7 @@ class Estado_situacion extends CI_Controller {
         $eb_fil = 10;
 
         foreach ($base_lista as $b_l) {
-            if ($b_l['idestructura_base'] == 2 ) {
+            if ($b_l['idestructura_base'] == 2) {
 
                 $sheet->setCellValueByColumnAndRow($eb_col, $eb_fil, $b_l['descripcion_estructura_base']);
                 $sheet->getStyle('D' . $eb_fil . ':E' . $eb_fil)->applyFromArray($styleEB);
@@ -748,7 +767,7 @@ class Estado_situacion extends CI_Controller {
                 $eb_fil++;
 //
                 $c_l_encontrada = $this->Categorias_cuentas_model->encontrar_por_campo_reporte($b_l['idestructura_base'], 1);
-                
+
                 $categorias = "";
                 $saldo_grupo_total_cat = 0;
                 foreach ($c_l_encontrada as $c_l) {
@@ -761,7 +780,7 @@ class Estado_situacion extends CI_Controller {
 //
                     //////////////niveles de grupos///////////////////
                     $saldo_grupo_total_final = 0;
-                    $num_grupos_impresos=0;
+                    $num_grupos_impresos = 0;
                     foreach ($grupos_n1 as $n1) {
 //
                         $grupos = $this->Estado_situacion_model->niveles_grupo(1, $n1['idgrupo_cuenta']);
@@ -798,29 +817,27 @@ class Estado_situacion extends CI_Controller {
                         } else {
                             $saldo_grupo_total = $saldo_grupo_total_cordoba;
                         }
-                        
+
                         $sheet->setCellValueByColumnAndRow($eb_col, $eb_fil, $n1['grupo_cuenta']);
                         $sheet->getStyle('D' . $eb_fil)->applyFromArray($styleG1);
-                        
+
                         $sheet->setCellValueByColumnAndRow($eb_col + 1, $eb_fil, $saldo_grupo_total);
                         $sheet->getStyle('E' . $eb_fil)->getNumberFormat()->setFormatCode('#,##0.00');
                         $sheet->getStyle('E' . $eb_fil)->applyFromArray($styleB);
-                        
+
                         $eb_fil++;
                         $num_grupos_impresos++;
                         $saldo_grupo_total_final += $saldo_grupo_total;
-                        
-                        
                     }
                     $sheet->setCellValueByColumnAndRow($eb_col, $eb_fil, "");
                     $sheet->getStyle('D' . $eb_fil . ':E' . $eb_fil)->applyFromArray($styleG1);
                     $sheet->mergeCells('D' . $eb_fil . ':E' . $eb_fil);
                     $eb_fil++;
-                    
-                    $sheet->setCellValue('E'.$eb_fil, '=SUM(E'.($eb_fil-($num_grupos_impresos+1)).':E'.($eb_fil-2).')');
-                    $sheet->getStyle('E'.$eb_fil)->getNumberFormat()->setFormatCode('#,##0.00');
+
+                    $sheet->setCellValue('E' . $eb_fil, '=SUM(E' . ($eb_fil - ($num_grupos_impresos + 1)) . ':E' . ($eb_fil - 2) . ')');
+                    $sheet->getStyle('E' . $eb_fil)->getNumberFormat()->setFormatCode('#,##0.00');
 //                    
-                     $categorias.="E".$eb_fil."+";
+                    $categorias.="E" . $eb_fil . "+";
 //                    
                     $sheet->setCellValueByColumnAndRow($eb_col, $eb_fil, "Total " . $c_l["categoria_cuenta"]);
                     $sheet->getStyle('D' . $eb_fil)->applyFromArray($styleG1);
@@ -830,16 +847,16 @@ class Estado_situacion extends CI_Controller {
                 }
                 $sheet->setCellValueByColumnAndRow($eb_col, $eb_fil, "Total Pasivos");
                 $sheet->getStyle('D' . $eb_fil)->applyFromArray($styleG1);
-                
-                $sheet->setCellValue('E'.$eb_fil, '='.substr($categorias,0,strlen($categorias)-1));
+
+                $sheet->setCellValue('E' . $eb_fil, '=' . substr($categorias, 0, strlen($categorias) - 1));
                 $sheet->getStyle('E' . $eb_fil)->getNumberFormat()->setFormatCode('#,##0.00');
                 $sheet->getStyle('E' . $eb_fil)->applyFromArray($styleB);
             }
         }
-        
-        
+
+
         foreach ($base_lista as $b_l) {
-            if ($b_l['idestructura_base'] == 3 ) {
+            if ($b_l['idestructura_base'] == 3) {
 
                 $sheet->setCellValueByColumnAndRow($eb_col, $eb_fil, $b_l['descripcion_estructura_base']);
                 $sheet->getStyle('D' . $eb_fil . ':E' . $eb_fil)->applyFromArray($styleEB);
@@ -847,7 +864,7 @@ class Estado_situacion extends CI_Controller {
                 $eb_fil++;
 //
                 $c_l_encontrada = $this->Categorias_cuentas_model->encontrar_por_campo_reporte($b_l['idestructura_base'], 1);
-                
+
                 $categorias = "";
                 $saldo_grupo_total_cat = 0;
                 foreach ($c_l_encontrada as $c_l) {
@@ -860,7 +877,7 @@ class Estado_situacion extends CI_Controller {
 //
                     //////////////niveles de grupos///////////////////
                     $saldo_grupo_total_final = 0;
-                    $num_grupos_impresos=0;
+                    $num_grupos_impresos = 0;
                     foreach ($grupos_n1 as $n1) {
 //
                         $grupos = $this->Estado_situacion_model->niveles_grupo(1, $n1['idgrupo_cuenta']);
@@ -897,29 +914,27 @@ class Estado_situacion extends CI_Controller {
                         } else {
                             $saldo_grupo_total = $saldo_grupo_total_cordoba;
                         }
-                        
+
                         $sheet->setCellValueByColumnAndRow($eb_col, $eb_fil, $n1['grupo_cuenta']);
                         $sheet->getStyle('D' . $eb_fil)->applyFromArray($styleG1);
-                        
+
                         $sheet->setCellValueByColumnAndRow($eb_col + 1, $eb_fil, $saldo_grupo_total);
                         $sheet->getStyle('E' . $eb_fil)->getNumberFormat()->setFormatCode('#,##0.00');
                         $sheet->getStyle('E' . $eb_fil)->applyFromArray($styleB);
-                        
+
                         $eb_fil++;
                         $num_grupos_impresos++;
                         $saldo_grupo_total_final += $saldo_grupo_total;
-                        
-                        
                     }
                     $sheet->setCellValueByColumnAndRow($eb_col, $eb_fil, "");
                     $sheet->getStyle('D' . $eb_fil . ':E' . $eb_fil)->applyFromArray($styleG1);
                     $sheet->mergeCells('D' . $eb_fil . ':E' . $eb_fil);
                     $eb_fil++;
-                    
-                    $sheet->setCellValue('E'.$eb_fil, '=SUM(E'.($eb_fil-($num_grupos_impresos+1)).':E'.($eb_fil-2).')');
-                    $sheet->getStyle('E'.$eb_fil)->getNumberFormat()->setFormatCode('#,##0.00');
+
+                    $sheet->setCellValue('E' . $eb_fil, '=SUM(E' . ($eb_fil - ($num_grupos_impresos + 1)) . ':E' . ($eb_fil - 2) . ')');
+                    $sheet->getStyle('E' . $eb_fil)->getNumberFormat()->setFormatCode('#,##0.00');
 //                    
-                     $categorias.="E".$eb_fil."+";
+                    $categorias.="E" . $eb_fil . "+";
 //                    
                     $sheet->setCellValueByColumnAndRow($eb_col, $eb_fil, "Total " . $c_l["categoria_cuenta"]);
                     $sheet->getStyle('D' . $eb_fil)->applyFromArray($styleG1);
@@ -929,13 +944,13 @@ class Estado_situacion extends CI_Controller {
                 }
                 $sheet->setCellValueByColumnAndRow($eb_col, $eb_fil, "Total Pasivos");
                 $sheet->getStyle('D' . $eb_fil)->applyFromArray($styleG1);
-                
-                $sheet->setCellValue('E'.$eb_fil, '='.substr($categorias,0,strlen($categorias)-1));
+
+                $sheet->setCellValue('E' . $eb_fil, '=' . substr($categorias, 0, strlen($categorias) - 1));
                 $sheet->getStyle('E' . $eb_fil)->getNumberFormat()->setFormatCode('#,##0.00');
                 $sheet->getStyle('E' . $eb_fil)->applyFromArray($styleB);
             }
         }
-        
+
         $sheet->setTitle("Reporte de Cuentas Contables");
 //        
         $sheet->getColumnDimension('A')->setAutoSize(true);
@@ -943,7 +958,7 @@ class Estado_situacion extends CI_Controller {
         $sheet->getColumnDimension('C')->setAutoSize(true);
         $sheet->getColumnDimension('D')->setAutoSize(true);
         $sheet->getColumnDimension('E')->setWidth(12);
-        
+
         $sheet->getPageSetup()->setOrientation(PHPExcel_Worksheet_PageSetup::ORIENTATION_LANDSCAPE);
 //
         $objWriter = PHPExcel_IOFactory::createWriter($this->excel, 'Excel2007');

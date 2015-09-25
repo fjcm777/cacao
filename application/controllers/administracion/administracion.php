@@ -13,13 +13,22 @@ class Administracion extends CI_Controller {
             exit('<script>alert("no tiene acceso");window.location=("http://localhost/cacao");</script>');
         }
         $data['titulo'] = 'Administracion';
-        $this->load->view('modules/menu/menu_administracion');
-        $this->load->view('administracion/index');
-        $this->load->view('modules/foot');
+
+        switch ($this->session->userdata('tipo_usuario')):
+
+            case 'Administrador':
+                $this->load->view('modules/menu/menu_administracion', $data);
+                break;
+
+            case 'Usuario':
+                exit('<script>alert("no tiene acceso");window.location=("http://localhost/cacao/index.php/contabilidad/contabilidad");</script>');
+                break;
+        endswitch;
     }
 
     public function index() {
-        
+        $this->load->view('administracion/index');
+        $this->load->view('modules/foot');
     }
 
 }

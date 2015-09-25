@@ -11,17 +11,17 @@ class Usuario_Procesar extends CI_Controller {
         if ($this->session->userdata('loged_in') != true) {
             exit('<script>alert("no tiene acceso");window.location=("http://localhost/cacao");</script>');
         }
-        $data['titulo'] = 'Usuario';
-        $this->load->view('modules/menu/menu_administracion', $data);
         $this->load->model('administracion/usuario/Usuario_Model');
     }
 
     public function index($var) {
+        $data['titulo'] = 'Usuario';
         if ($var == 1) {
             $this->load->view('administracion/usuario/usuario_lista_view');
         } else if ($var == 0) {
             $this->load->view('administracion/usuario/usuario_lista_inactivo_view');
         }
+        $this->load->view('modules/menu/menu_administracion', $data);
         $this->load->view('modules/foot/administracion/foot_usuario');
     }
 
@@ -103,55 +103,98 @@ class Usuario_Procesar extends CI_Controller {
     }
 
     // crear nuevo usuario   
-       public function usuario_crear() {
+    public function usuario_crear() {
+        $data['titulo'] = 'Crear Usuario';
         $this->form_validation->set_rules('nombre', 'Nombre', 'required|trim');
         $this->form_validation->set_rules('apellido', 'Apellido', 'required|trim');
         $this->form_validation->set_rules('usuario', 'Usuario', 'required|trim');
         $this->form_validation->set_rules('contrasenia', 'Contraseñia', 'required|trim');
 
+        $this->load->model('administracion/usuario/Tipo_Usuario_Model');
+        $tipo = $this->Tipo_Usuario_Model->lista_dropdown();
+
+        if (!empty($tipo)) {
+            $lista_dropdown = $tipo;
+        } else if (empty($tipo)) {
+            $lista_dropdown = array('' => '');
+        }
+
+        $data['idtipo_usuario'] = $lista_dropdown;
+
         if ($this->form_validation->run() == TRUE) {
             $nombre = $this->input->post('nombre');
             $apellido = $this->input->post('apellido');
             $usuario = $this->input->post('usuario');
+            $tipo_usuario = $this->input->post('tipo_usuario');
             $contrasenia = $this->input->post('contrasenia');
             $contrasenia_md5 = md5($contrasenia);
 
-            $this->Usuario_Model->usuario_crear($nombre, $apellido, $usuario, $contrasenia_md5);
+            $this->Usuario_Model->usuario_crear($nombre, $apellido, $usuario, $tipo_usuario, $contrasenia_md5);
             header('Location:' . base_url() . 'index.php/administracion/usuario/usuario_procesar/index/1');
         } else {
-            $this->load->view('modules/menu/menu_administracion');
+            $this->load->view('modules/menu/menu_administracion', $data);
             $this->load->view('administracion/usuario/usuario_crea_view');
+             $this->load->view('modules/foot/administracion/foot_usuario');
+             
+           
         }
-        $this->load->view('modules/foot/administracion/foot_usuario');
+
+          /// metodo para listar los permisos al momento de crear usuario /// 
+        $this->load->model('administracion/permisos/Permisos_Model');
+        $query_contabilidad = $this->Permisos_Model->recuperar_menu_contabilidad();
+        $data['campos_contabilidad'] = $query_contabilidad;
+
+        $query_banco = $this->Permisos_Model->recuperar_menu_banco();
+        $data['campos_banco'] = $query_banco;
+
+        $this->load->view('modules/pop_up/permisos_usuarios_administrador_pop', $data);
     }
+
     //modificar usaurio
     public function usuario_editar($idusuario) {
-        
+
         $data['titulo'] = 'Usuario Editar';
-        $this->load->view('modules/menu/menu_administracion', $data);
+
 
         $data['lista_por_id'] = $this->Usuario_Model->encontrar_por_id($idusuario);
 
+        $this->load->model('administracion/usuario/Tipo_Usuario_Model');
+        $tipo = $this->Tipo_Usuario_Model->lista_dropdown();
+
+        if (!empty($tipo)) {
+            $lista_dropdown = $tipo;
+        } else if (empty($tipo)) {
+            $lista_dropdown = array('' => ' ');
+        }
 
         $this->form_validation->set_rules('nombre', 'Nombre', 'trim');
         $this->form_validation->set_rules('apellido', 'Apellido', 'trim');
         $this->form_validation->set_rules('usuario', 'Usuario', 'trim');
 
-        $data['idusuario'] = $idusuario;
+        $this->load->model('administracion/permisos/Permisos_Model');
+        $query_contabilidad = $this->Permisos_Model->recuperar_menu_contabilidad();
+        $query_banco = $this->Permisos_Model->recuperar_menu_banco();
 
+
+        $data['idusuario'] = $idusuario;
+        $data['idtipo_usuario'] = $lista_dropdown;
+        $data['campos_contabilidad'] = $query_contabilidad;
+        $data['campos_banco'] = $query_banco;
 
         if ($this->form_validation->run() == TRUE) {
             $this->Usuario_Model->usuario_editar($idusuario);
             header('Location:' . base_url() . 'index.php/administracion/usuario/usuario_procesar/index/1');
         } else {
-            $this->load->view('modules/menu/menu_administracion');
-            $this->load->view('administracion/usuario/usuario_edita_view', $data);
+            $this->load->view('modules/menu/menu_administracion', $data);
+            $this->load->view('administracion/usuario/usuario_edita_view');
         }
 
         $this->load->view('modules/foot/administracion/foot_usuario_edita');
+        $this->load->view('modules/pop_up/permisos_usuarios_administrador_edita_pop');
     }
 
-public function usuario_editar_pass($idusuario) {
+    public function usuario_editar_pass($idusuario) {
+        $data['titulo'] = 'Editar Pass';
         $this->form_validation->set_rules('pass', 'Contrasenia', 'trim|required|matches[confirmar_pass]');
         $this->form_validation->set_rules('confirmar_pass', 'Confirmar Clave', 'trim|required|matches[pass]');
 
@@ -161,12 +204,12 @@ public function usuario_editar_pass($idusuario) {
         if ($this->form_validation->run() == TRUE) {
             $pass = $this->input->post('pass');
             $nuevo_pass = md5($pass);
-            
-            $this->Usuario_Model->usuario_editar_pass($idusuario,$nuevo_pass);
+
+            $this->Usuario_Model->usuario_editar_pass($idusuario, $nuevo_pass);
             header('Location:' . base_url() . 'index.php/administracion/usuario/usuario_procesar/index/1');
         } else {
-            $this->load->view('modules/menu/menu_administracion');
-            $this->load->view('administracion/usuario/usuario_edita_contra_view', $data);
+            $this->load->view('modules/menu/menu_administracion', $data);
+            $this->load->view('administracion/usuario/usuario_edita_contra_view');
         }
 
         $this->load->view('modules/foot/administracion/foot_usuario');
@@ -182,6 +225,12 @@ public function usuario_editar_pass($idusuario) {
     }
 
     public function usuario_eliminar($idusuario) {
+
+        $usuario = $this->Usuario_Model->recuperar_usuario($idusuario);
+
+        $this->load->model('administracion/permisos/Permisos_Model');
+        $this->Permisos_Model->eliminar_permisos_usuario($usuario[0]['usuario']);
+
         $this->Usuario_Model->usuario_eliminar($idusuario);
 
         header('Location:' . base_url() . 'index.php/administracion/usuario/usuario_procesar/index/0');
